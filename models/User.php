@@ -6,6 +6,7 @@ class User
   public string $publicId;
   public string $email;
   public string $password;
+  public string $salt;
   public string $name;
   public string $birthdate;
   public string $city;
@@ -16,6 +17,6 @@ class User
 
 interface UserDAO
 {
-  public function findByToken(string $publicId);
+  public function findById(string $publicId);
   public function findByEmail(string $email);
 }

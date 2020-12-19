@@ -20,9 +20,9 @@ require_once('./config.php');
   </header>
   <section class="container main">
     <form method="POST" action="<?= $base ?>/login_action.php">
-      <?php if(empty($_SESSION['flash']) === false):?>
-        <?=$_SESSION['flash']?>
-        <?php $_SESSION['flash'] = ''?>
+      <?php if (empty($_SESSION['flash']) === false) : ?>
+        <?= $_SESSION['flash'] ?>
+        <?php $_SESSION['flash'] = '' ?>
       <?php endif; ?>
 
       <input placeholder="Digite seu e-mail" class="input" type="email" name="email" />

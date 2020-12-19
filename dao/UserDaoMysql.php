@@ -11,12 +11,14 @@ class UserDaoMysql implements UserDAO
     $this->pdo = $pdo;
   }
 
-  private function generateUser(string $array)
+  private function generateUser(array $array)
   {
     $user = new User();
 
-    $user->publicId = $array['publicId'] ?? '';
+    $user->publicId = $array['public_id'] ?? '';
     $user->email = $array['email'] ?? '';
+    $user->password = $array['password'] ?? '';
+    $user->salt = $array['salt'] ?? '';
     $user->name = $array['name'] ?? '';
     $user->birthdate = $array['birthdate'] ?? '';
     $user->city = $array['city'] ?? '';
@@ -27,11 +29,11 @@ class UserDaoMysql implements UserDAO
     return $user;
   }
 
-  public function findByToken(string $publicId)
+  public function findById(string $publicId)
   {
     if (empty($publicId) === false) {
       $sql = $this->pdo->prepare("SELECT * FROM users WHERE public_id = :public_id");
-      $sql->bindValue('public_id', $publicId);
+      $sql->bindValue(':public_id', $publicId);
       $sql->execute();
 
       if ($sql->rowCount() > 0) {
@@ -49,7 +51,7 @@ class UserDaoMysql implements UserDAO
   {
     if (empty($email) === false) {
       $sql = $this->pdo->prepare("SELECT * FROM users WHERE email = :email");
-      $sql->bindValue('email', $email);
+      $sql->bindValue(':email', $email);
       $sql->execute();
 
       if ($sql->rowCount() > 0) {
@@ -62,4 +64,30 @@ class UserDaoMysql implements UserDAO
     }
     return false;
   }
-};
+
+  public function findBySalt(string $salt)
+  {
+    if (empty($salt) === false) {
+      $sql = $this->pdo->prepare("SELECT * FROM users WHERE salt = :salt");
+      $sql->bindValue(':salt', $salt);
+      $sql->execute();
+
+      return $sql->rowCount() > 0 ? true : false;
+    }
+  }
+
+  public function insert(User $user)
+  {
+    $sql =  $this->pdo->prepare(
+      "INSERT INTO users (public_id, email, password, salt, name, birthdate) 
+        VALUES (:public_id, :email, :password, :salt, :name, :birthdate)"
+    );
+    $sql->bindValue(':public_id', $user->publicId);
+    $sql->bindValue(':email', $user->email);
+    $sql->bindValue(':password', $user->password);
+    $sql->bindValue(':salt', $user->salt);
+    $sql->bindValue(':name', $user->name);
+    $sql->bindValue(':birthdate', $user->birthdate);
+    $sql->execute();
+  }
+}

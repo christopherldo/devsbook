@@ -12,11 +12,13 @@ class Auth
 
   private PDO $pdo;
   private string $base;
+  private UserDaoMysql $dao;
 
   public function __construct(PDO $pdo, string $base)
   {
     $this->pdo = $pdo;
     $this->base = $base;
+    $this->dao = new UserDaoMysql($this->pdo);
   }
 
   public function checkToken()
@@ -33,9 +35,7 @@ class Auth
           $publicId = $payload->publicId ?? null;
 
           if ($publicId) {
-            $userDao = new UserDaoMysql($this->pdo);
-
-            $user = $userDao->findByToken($publicId);
+            $user = $this->dao->findById($publicId);
 
             if ($user) {
               return $user;
@@ -119,20 +119,16 @@ class Auth
 
   public function validateLogin(string $email, string $password)
   {
-    $userDao = new UserDaoMysql($this->pdo);
-
-    $user = $userDao->findByEmail($email);
+    $user = $this->dao->findByEmail($email);
 
     if ($user) {
       $salt = $user->salt;
       $hash = hash('sha256', $password . $salt);
 
       if ($hash === $user->password) {
-        $token = $this->generateToken($user->public_id);
+        $token = $this->generateToken($user->publicId);
 
         $_SESSION['token'] = $token;
-
-        $user->token = $token;
 
         return true;
       }
@@ -167,5 +163,67 @@ class Auth
   protected function setPayload(array $payload)
   {
     return json_encode($payload);
+  }
+
+  public function emailExists(string $email)
+  {
+    return $this->dao->findByEmail($email) ? true : false;
+  }
+
+  public function registerUser(string $name, string $email, string $password, string $birthdate)
+  {
+    do {
+      $salt = $this->generateSalt();
+    } while ($this->dao->findBySalt($salt));
+
+    do {
+      $publicId = $this->generateUuid();
+    } while ($this->dao->findById($publicId));
+
+    $hash = hash('sha256', $password . $salt);
+
+    $newUser = new User();
+    $newUser->publicId = $publicId;
+    $newUser->email = $email;
+    $newUser->password = $hash;
+    $newUser->salt = $salt;
+    $newUser->name = $name;
+    $newUser->birthdate = $birthdate;
+
+    $this->dao->insert($newUser);
+
+    $token = $this->generateToken($publicId);
+
+    $_SESSION['token'] = $token;
+  }
+
+  private function generateSalt(int $length = 64)
+  {
+    $chars =  'ABCDEFGHIJKLMNOPQRSTUVWXYZ' . 'abcdefghijklmnopqrstuvwxyz' .
+      '0123456789' . '`-=~!@#$%^&*()_+,./<>?;:[]{}\|';
+    $salt = '';
+
+    $max = strlen($chars) - 1;
+
+    for ($i = 0; $i < $length; $i++) {
+      $salt .= $chars[random_int(0, $max)];
+    }
+
+    return $salt;
+  }
+
+  private function generateUuid()
+  {
+    return sprintf(
+      '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+      mt_rand(0, 0xffff),
+      mt_rand(0, 0xffff),
+      mt_rand(0, 0xffff),
+      mt_rand(0, 0x0fff) | 0x4000,
+      mt_rand(0, 0x3fff) | 0x8000,
+      mt_rand(0, 0xffff),
+      mt_rand(0, 0xffff),
+      mt_rand(0, 0xffff)
+    );
   }
 }
