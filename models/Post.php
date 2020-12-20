@@ -12,4 +12,5 @@ class Post
 interface PostDAO
 {
   public function insert(Post $post);
+  public function getHomeFeed(string $id_user);
 }
