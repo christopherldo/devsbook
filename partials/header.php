@@ -1,3 +1,5 @@
+<?php $firstName = current(explode(' ', $userInfo->name)); ?>
+
 <!DOCTYPE html>
 <html>
 
@@ -17,16 +19,16 @@
       <div class="head-side">
         <div class="head-side-left">
           <div class="search-area">
-            <form method="GET">
+            <form method="GET" action="<?= $base ?>/search.php">
               <input type="search" placeholder="Pesquisar" name="s" />
             </form>
           </div>
         </div>
         <div class="head-side-right">
           <a href="<?= $base ?>/perfil.php" class="user-area">
-            <div class="user-area-text">Bonieky</div>
+            <div class="user-area-text"><?= $firstName ?></div>
             <div class="user-area-icon">
-              <img src="<?= $base ?>/media/avatars/avatar.jpg" />
+              <img src="<?= $base ?>/media/avatars/<?= $userInfo->avatar ?>" />
             </div>
           </a>
           <a href="<?= $base ?>/logout.php" class="user-logout">

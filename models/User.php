@@ -2,7 +2,6 @@
 
 class User
 {
-  private int $id;
   public string $publicId;
   public string $email;
   public string $password;
@@ -19,4 +18,6 @@ interface UserDAO
 {
   public function findById(string $publicId);
   public function findByEmail(string $email);
+  public function findBySalt(string $salt);
+  public function insert(User $user);
 }
