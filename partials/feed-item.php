@@ -9,7 +9,7 @@ switch ($item->type) {
     break;
 }
 
-$createdAt = date('d/m/Y', strtotime($item->createdAt));
+$createdAt = date('n/d/Y H:i:m', strtotime($item->createdAt));
 ?>
 
 <div class="box feed-item">

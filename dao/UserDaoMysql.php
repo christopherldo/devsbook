@@ -1,6 +1,8 @@
 <?php
 
 require_once('./models/User.php');
+require_once('./dao/UserRelationDaoMysql.php');
+require_once('./dao/PostDaoMysql.php');
 
 class UserDaoMysql implements UserDAO
 {
@@ -11,7 +13,7 @@ class UserDaoMysql implements UserDAO
     $this->pdo = $pdo;
   }
 
-  private function generateUser(array $array)
+  private function generateUser(array $array, bool $full = false)
   {
     $user = new User();
 
@@ -26,10 +28,29 @@ class UserDaoMysql implements UserDAO
     $user->avatar = $array['avatar'] ?? '';
     $user->cover = $array['cover'] ?? '';
 
+    if($full){
+      $userRelationDaoMysql = new UserRelationDaoMysql($this->pdo);
+      $postDaoMysql = new PostDaoMysql($this->pdo);
+      
+      $user->followers = $userRelationDaoMysql->getFollowers($user->publicId);
+      foreach($user->followers as $key => $followerId){
+        $newUser = $this->findById($followerId);
+        $user->followers[$key] = $newUser;
+      }
+
+      $user->following = $userRelationDaoMysql->getFollowing($user->publicId);
+      foreach($user->following as $key => $followerId){
+        $newUser = $this->findById($followerId);
+        $user->following[$key] = $newUser;
+      }
+
+      $user->photos = $postDaoMysql->getPhotosFrom($user->publicId);
+    }
+
     return $user;
   }
 
-  public function findById(string $publicId)
+  public function findById(string $publicId, bool $full = false)
   {
     if (empty($publicId) === false) {
       $sql = $this->pdo->prepare("SELECT * FROM users WHERE public_id = :public_id");
@@ -39,7 +60,7 @@ class UserDaoMysql implements UserDAO
       if ($sql->rowCount() > 0) {
         $data = $sql->fetch(PDO::FETCH_ASSOC);
 
-        $user = $this->generateUser($data);
+        $user = $this->generateUser($data, $full);
 
         return $user;
       }

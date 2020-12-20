@@ -34,7 +34,9 @@ class PostDaoMysql implements PostDAO
     $array = [];
 
     $userRelationDao = new UserRelationDaoMysql($this->pdo);
-    $userList = $userRelationDao->getRelationsFrom($publicId);
+    $userList = $userRelationDao->getFollowing($publicId);
+
+    $userList[] = $publicId;
 
     $sqlString = "SELECT * FROM posts WHERE id_user IN (";
     $counter = 1;
@@ -54,6 +56,45 @@ class PostDaoMysql implements PostDAO
     $sql = $this->pdo->query($sqlString);
 
     if ($sql && $sql->rowCount() > 0) {
+      $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+      $array = $this->postListToObject($data, $publicId);
+    }
+
+    return $array;
+  }
+
+  public function getUserFeed(string $publicId)
+  {
+    $array = [];
+
+    $sql = $this->pdo->prepare(
+      "SELECT * FROM posts WHERE id_user = :id_user ORDER BY created_at DESC"
+    );
+    $sql->bindValue(':id_user', $publicId);
+    $sql->execute();
+
+    if ($sql && $sql->rowCount() > 0) {
+      $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+      $array = $this->postListToObject($data, $publicId);
+    }
+
+    return $array;
+  }
+
+  public function getPhotosFrom(string $publicId)
+  {
+    $array = [];
+
+    $sql = $this->pdo->prepare(
+      "SELECT * FROM posts where id_user = :id_user AND type = 'photo'
+      ORDER BY created_at DESC"
+    );
+    $sql->bindValue(':id_user', $publicId);
+    $sql->execute();
+
+    if($sql->rowCount() > 0){
       $data = $sql->fetchAll(PDO::FETCH_ASSOC);
 
       $array = $this->postListToObject($data, $publicId);
