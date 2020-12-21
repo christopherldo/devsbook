@@ -90,9 +90,6 @@ if ($name && $email && $birthdate) {
     }
   }
 
-  echo '<pre>';
-  print_r($_FILES);
-
   // AVATAR
   if (isset($_FILES['avatar']) && empty($_FILES['avatar']['tmp_name'] === false)) {
     $newAvatar = $_FILES['avatar'];
@@ -119,22 +116,113 @@ if ($name && $email && $birthdate) {
           $newWidth = $newHeight * $ratio;
         }
 
-        echo $newWidth . 'x' . $newHeight;
+        $x = ($avatarWidth - $newWidth) / 2;
+        $y = ($avatarHeight - $newHeight) / 2;
+
+        $finalImage = imagecreatetruecolor($avatarWidth, $avatarHeight);
+
+        switch ($newAvatar['type']) {
+          case 'image/jpeg':
+          case 'image/jpg':
+            $image = imagecreatefromjpeg($newAvatar['tmp_name']);
+            break;
+          case 'image/png':
+            $image = imagecreatefrompng($newAvatar['tmp_name']);
+            break;
+        }
+
+        imagecopyresampled(
+          $finalImage,
+          $image,
+          $x,
+          $y,
+          0,
+          0,
+          $newWidth,
+          $newHeight,
+          $witdhOrig,
+          $heightOrig
+        );
+
+        $avatarName = $userInfo->publicId . '.webp';
+
+        imagewebp($finalImage, './media/avatars/' . $avatarName, 100);
+
+        $userInfo->avatar = $avatarName;
       } else {
         $_SESSION['flash'] = 'Formato de imagem não aceita';
 
         header("Location: $base/configuracoes.php");
-        exit;
       }
-    } else {
-      $_SESSION['flash'] = 'Ocorreu um erro ao enviar sua foto de perfil. 
-      Por favor, tente novamente.';
-
-      header("Location: $base/configuracoes.php");
-      exit;
     }
   }
-  exit;
+
+  // COVER
+  if (isset($_FILES['cover']) && empty($_FILES['cover']['tmp_name'] === false)) {
+    $newCover = $_FILES['cover'];
+
+    if ($_FILES['cover']['error'] === 0) {
+      $acceptable = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png'
+      ];
+
+      if (in_array($newCover['type'], $acceptable)) {
+        $coverWidth = 850;
+        $coverHeight = 313;
+
+        list($witdhOrig, $heightOrig) = getimagesize($newCover['tmp_name']);
+        $ratio = $witdhOrig / $heightOrig;
+
+        $newWidth = $coverWidth;
+        $newHeight = $newWidth / $ratio;
+
+        if ($newHeight < $coverHeight) {
+          $newHeight = $coverHeight;
+          $newWidth = $newHeight * $ratio;
+        }
+
+        $x = ($coverWidth - $newWidth) / 2;
+        $y = ($coverHeight - $newHeight) / 2;
+
+        $finalImage = imagecreatetruecolor($coverWidth, $coverHeight);
+
+        switch ($newCover['type']) {
+          case 'image/jpeg':
+          case 'image/jpg':
+            $image = imagecreatefromjpeg($newCover['tmp_name']);
+            break;
+          case 'image/png':
+            $image = imagecreatefrompng($newCover['tmp_name']);
+            break;
+        }
+
+        imagecopyresampled(
+          $finalImage,
+          $image,
+          $x,
+          $y,
+          0,
+          0,
+          $newWidth,
+          $newHeight,
+          $witdhOrig,
+          $heightOrig
+        );
+
+        $coverName = $userInfo->publicId . '.webp';
+
+        imagewebp($finalImage, './media/covers/' . $coverName, 100);
+
+        $userInfo->cover = $coverName;
+      } else {
+        $_SESSION['flash'] = 'Formato de imagem não aceita';
+
+        header("Location: $base/configuracoes.php");
+      }
+    }
+  }
   $userDao->update($userInfo);
 
   $_SESSION['flash'] = 'Configurações atualizadas com sucesso';
