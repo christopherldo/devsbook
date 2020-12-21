@@ -19,5 +19,6 @@ interface UserDAO
   public function findById(string $publicId);
   public function findByEmail(string $email);
   public function findBySalt(string $salt);
+  public function findByName(string $name);
   public function insert(User $user);
 }

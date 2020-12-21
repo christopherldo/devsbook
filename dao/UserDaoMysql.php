@@ -2,7 +2,6 @@
 
 require_once('./models/User.php');
 require_once('./dao/UserRelationDaoMysql.php');
-require_once('./dao/PostDaoMysql.php');
 
 class UserDaoMysql implements UserDAO
 {
@@ -28,18 +27,18 @@ class UserDaoMysql implements UserDAO
     $user->avatar = $array['avatar'] ?? '';
     $user->cover = $array['cover'] ?? '';
 
-    if($full){
+    if ($full) {
       $userRelationDaoMysql = new UserRelationDaoMysql($this->pdo);
       $postDaoMysql = new PostDaoMysql($this->pdo);
-      
+
       $user->followers = $userRelationDaoMysql->getFollowers($user->publicId);
-      foreach($user->followers as $key => $followerId){
+      foreach ($user->followers as $key => $followerId) {
         $newUser = $this->findById($followerId);
         $user->followers[$key] = $newUser;
       }
 
       $user->following = $userRelationDaoMysql->getFollowing($user->publicId);
-      foreach($user->following as $key => $followerId){
+      foreach ($user->following as $key => $followerId) {
         $newUser = $this->findById($followerId);
         $user->following[$key] = $newUser;
       }
@@ -95,6 +94,26 @@ class UserDaoMysql implements UserDAO
 
       return $sql->rowCount() > 0 ? true : false;
     }
+  }
+
+  public function findByName(string $name)
+  {
+    $array = [];
+
+    if (empty($name) === false) {
+      $sql = $this->pdo->prepare("SELECT * FROM users WHERE name LIKE :name");
+      $sql->bindValue(':name', '%' . $name . '%');
+      $sql->execute();
+
+      if ($sql->rowCount() > 0) {
+        $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($data as $item) {
+          $array[] = $this->generateUser($item);
+        }
+      }
+    }
+    return $array;
   }
 
   public function insert(User $user)

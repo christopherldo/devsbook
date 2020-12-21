@@ -5,7 +5,7 @@ require_once('./dao/PostDaoMysql.php');
 
 $auth = new Auth($pdo, $base);
 $userInfo = $auth->checkToken();
-$activeMenu = 'profile';
+$activeMenu = 'photos';
 
 $publicId = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_SPECIAL_CHARS);
 
@@ -31,8 +31,6 @@ $datefrom = new DateTime($user->birthdate);
 $dateTo = new DateTime('today');
 
 $user->ageYears = $datefrom->diff($dateTo)->y;
-
-$feed = $postDao->getUserFeed($publicId);
 
 require_once('./partials/header.php');
 require_once('./partials/menu.php');
@@ -72,82 +70,11 @@ require_once('./partials/menu.php');
       </div>
     </div>
   </div>
-
   <div class="row">
-
-    <div class="column side pr-5">
-
+    <div class="column">
       <div class="box">
         <div class="box-body">
-
-          <div class="user-info-mini">
-            <img src="<?= $base ?>/assets/images/calendar.png" />
-            <?= date('d/m/Y', strtotime($user->birthdate)) ?> (<?= $user->ageYears ?> anos)
-          </div>
-
-          <?php if (empty($user->city) === false) : ?>
-            <div class="user-info-mini">
-              <img src="<?= $base ?>assets/images/pin.png" />
-              <?= $user->city ?>
-            </div>
-          <?php endif; ?>
-
-          <?php if (empty($user->work) === false) : ?>
-            <div class="user-info-mini">
-              <img src="<?= $base ?>assets/images/work.png" />
-              <?= $user->work ?>
-            </div>
-          <?php endif; ?>
-
-        </div>
-      </div>
-
-      <?php if (count($user->following) > 0) : ?>
-        <div class="box">
-          <div class="box-header m-10">
-            <div class="box-header-text">
-              Seguindo
-              <span>(<?= count($user->following) ?>)</span>
-            </div>
-            <div class="box-header-buttons">
-              <a href="<?= $base ?>/amigos.php?id=<?= $user->publicId ?>">ver todos</a>
-            </div>
-          </div>
-          <div class="box-body friend-list">
-            <?php if (count($user->following) > 0) : ?>
-              <?php foreach ($user->following as $item) : ?>
-                <?php $friendFirstName = explode(' ', $item->name)[0]; ?>
-                <div class="friend-icon">
-                  <a href="<?= $base ?>/perfil.php?id=<?= $item->publicId ?>">
-                    <div class="friend-icon-avatar">
-                      <img src="<?= $base ?>/media/avatars/<?= $item->avatar ?>" />
-                    </div>
-                    <div class="friend-icon-name">
-                      <?= $friendFirstName ?>
-                    </div>
-                  </a>
-                </div>
-              <?php endforeach ?>
-            <?php endif ?>
-          </div>
-        </div>
-      <?php endif ?>
-
-    </div>
-    <div class="column pl-5">
-      <?php if (count($user->photos) > 0) : ?>
-        <div class="box">
-          <div class="box-header m-10">
-            <div class="box-header-text">
-              Fotos
-              <span>(<?= count($user->photos) ?>)</span>
-            </div>
-            <div class="box-header-buttons">
-              <a href="<?= $base ?>/fotos.php?id=<?= $publicId ?>">ver todos</a>
-            </div>
-          </div>
-          <div class="box-body row m-20">
-
+          <div class="full-user-photos">
             <?php foreach ($user->photos as $key => $item) : ?>
               <div class="user-photo-item">
                 <a href="#modal-<?= $key ?>" rel="modal:open">
@@ -158,21 +85,12 @@ require_once('./partials/menu.php');
                 </div>
               </div>
             <?php endforeach ?>
-
+            <?php if (count($user->photos) === 0) : ?>
+              Esse usuário ainda não postou uma foto :/
+            <?php endif ?>
           </div>
         </div>
-      <?php endif ?>
-
-      <?php if ($publicId === $userInfo->publicId) : ?>
-        <?php require('./partials/feed-editor.php') ?>
-      <?php endif ?>
-
-      <?php if (count($feed) > 0) : ?>
-        <?php foreach ($feed as $item) : ?>
-          <?php require('./partials/feed-item.php') ?>
-        <?php endforeach ?>
-      <?php endif ?>
-
+      </div>
     </div>
   </div>
 </section>
