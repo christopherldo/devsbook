@@ -21,4 +21,5 @@ interface UserDAO
   public function findBySalt(string $salt);
   public function findByName(string $name);
   public function insert(User $user);
+  public function update(User $user);
 }

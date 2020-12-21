@@ -25,15 +25,16 @@ require_once('./config.php');
         <?php $_SESSION['flash'] = '' ?>
       <?php endif; ?>
 
-      <input placeholder="Digite seu nome completo" class="input" type="text" name="name" id="name" required/>
+      <input placeholder="Digite seu nome completo" class="input" type="text" name="name" id="name" required />
 
-      <input placeholder="Digite seu e-mail" class="input" type="email" name="email" id="email" required/>
+      <input placeholder="Digite seu e-mail" class="input" type="email" name="email" id="email" required />
 
-      <input placeholder="Digite sua senha" class="input" type="password" name="password" id="password" required/>
+      <input placeholder="Digite sua senha" class="input" type="password" name="password" id="password" required />
+      <input placeholder="Confirme sua senha" class="input" type="password" name="password-confirmation" id="password-confirmation" required />
 
-      <input placeholder="Digite sua data de nascimento" class="input" type="text" name="birthdate" id="birthdate" required/>
+      <input placeholder="Digite sua data de nascimento" class="input" type="text" name="birthdate" id="birthdate" required />
 
-      <input class="button" type="submit" value="Fazer cadastro" id="submit"/>
+      <input class="button" type="submit" value="Fazer cadastro" id="submit" />
 
       <a href="<?= $base ?>/login.php">Já possui uma conta? Faça login</a>
     </form>
@@ -42,8 +43,9 @@ require_once('./config.php');
   <script src="https://unpkg.com/imask"></script>
   <script>
     IMask(
-      document.getElementById('birthdate'),
-      {mask: '00/00/0000'}
+      document.getElementById('birthdate'), {
+        mask: '00/00/0000'
+      }
     );
   </script>
 </body>

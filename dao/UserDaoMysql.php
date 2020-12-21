@@ -133,4 +133,23 @@ class UserDaoMysql implements UserDAO
     $sql->bindValue(':birthdate', $user->birthdate);
     $sql->execute();
   }
+
+  public function update(User $user)
+  {
+    $sql = $this->pdo->prepare(
+      "UPDATE users SET email = :email, password = :password, name = :name,
+      birthdate = :birthdate, city = :city, work = :work, avatar = :avatar, cover = :cover
+      WHERE public_id = :public_id"
+    );
+    $sql->bindValue(':email', $user->email);
+    $sql->bindValue(':password', $user->password);
+    $sql->bindValue(':name', $user->name);
+    $sql->bindValue(':birthdate', $user->birthdate);
+    $sql->bindValue(':city', $user->city);
+    $sql->bindValue(':work', $user->work);
+    $sql->bindValue(':avatar', $user->avatar);
+    $sql->bindValue(':cover', $user->cover);
+    $sql->bindValue(':public_id', $user->publicId);
+    $sql->execute();
+  }
 }
