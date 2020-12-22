@@ -6,7 +6,7 @@ require_once('./dao/PostLikeDaoMysql.php');
 $auth = new Auth($pdo, $base);
 $userInfo = $auth->checkToken();
 
-$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+$id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_SPECIAL_CHARS);
 
 if (empty($id) === false) {
   $postLikeDao = new PostLikeDaoMysql($pdo);

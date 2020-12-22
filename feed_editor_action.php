@@ -12,6 +12,7 @@ if ($body) {
   $postDao = new PostDaoMysql($pdo);
 
   $newPost = new Post();
+  $newPost->publicId = $postDao->generateUuid();
   $newPost->idUser = $userInfo->publicId;
   $newPost->type = 'text';
   $newPost->createdAt = gmdate('Y-m-d H:i:s');

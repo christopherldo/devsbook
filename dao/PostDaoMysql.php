@@ -4,6 +4,7 @@ require_once('./models/Post.php');
 require_once('./dao/UserRelationDaoMysql.php');
 require_once('./dao/UserDaoMysql.php');
 require_once('./dao/PostLikeDaoMysql.php');
+require_once('./dao/PostCommentDaoMysql.php');
 
 class PostDaoMysql implements PostDAO
 {
@@ -18,11 +19,12 @@ class PostDaoMysql implements PostDAO
   {
     $sql = $this->pdo->prepare(
       "INSERT INTO posts (
-        id_user, type, created_at, body
+        public_id, id_user, type, created_at, body
       ) VALUES (
-        :id_user, :type, :created_at, :body
+        :public_id, :id_user, :type, :created_at, :body
       )"
     );
+    $sql->bindValue(':public_id', $post->publicId);
     $sql->bindValue(':id_user', $post->idUser);
     $sql->bindValue(':type', $post->type);
     $sql->bindValue(':created_at', $post->createdAt);
@@ -109,10 +111,11 @@ class PostDaoMysql implements PostDAO
     $posts = [];
     $userDao = new UserDaoMysql($this->pdo);
     $postLikeDao = new PostLikeDaoMysql($this->pdo);
+    $postCommentDaoMysql = new PostCommentDaoMysql($this->pdo);
 
     foreach ($postList as $postItem) {
       $newPost = new Post();
-      $newPost->id = $postItem['id'];
+      $newPost->publicId = $postItem['public_id'];
       $newPost->type = $postItem['type'];
       $newPost->createdAt = $postItem['created_at'];
       $newPost->body = $postItem['body'];
@@ -124,14 +127,51 @@ class PostDaoMysql implements PostDAO
 
       $newPost->user = $userDao->findById($postItem['id_user']);
 
-      $newPost->likeCount = $postLikeDao->getLikeCount($newPost->id);
-      $newPost->liked = $postLikeDao->isLiked($newPost->id, $publicId);
+      $newPost->likeCount = $postLikeDao->getLikeCount($newPost->publicId);
+      $newPost->liked = $postLikeDao->isLiked($newPost->publicId, $publicId);
 
-      $newPost->comments = [];
+      $newPost->comments = $postCommentDaoMysql->getComments($newPost->publicId);
 
       $posts[] = $newPost;
     }
 
     return $posts;
+  }
+
+  public function findById(string $publicId)
+  {
+    if (empty($publicId) === false) {
+      $sql = $this->pdo->prepare("SELECT * FROM posts WHERE public_id = :public_id");
+      $sql->bindValue(':public_id', $publicId);
+      $sql->execute();
+
+      if ($sql->rowCount() > 0) {
+        $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+        $array = $this->postListToObject($data, $publicId);
+
+        return $array;
+      }
+    }
+    return false;
+  }
+
+  public function generateUuid()
+  {
+    do {
+      $uuid = sprintf(
+        '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff)
+      );
+    } while ($this->findById($uuid));
+
+    return $uuid;
   }
 }

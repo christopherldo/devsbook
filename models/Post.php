@@ -2,7 +2,7 @@
 
 class Post
 {
-  public int $id;
+  public string $publicId;
   public string $idUser;
   public string $type;
   public string $createdAt;
@@ -15,4 +15,6 @@ interface PostDAO
   public function getHomeFeed(string $publicId);
   public function getUserFeed(string $publicId);
   public function getPhotosFrom(string $publicId);
+  public function findById(string $publicId);
+  public function generateUuid();
 }

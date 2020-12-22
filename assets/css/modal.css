@@ -1,4 +1,6 @@
-.modal { display: none; }
+.modal {
+  display: none;
+}
 
 .vanilla-modal .modal {
   display: block;
@@ -11,7 +13,6 @@
   background: rgba(0, 0, 0, 0.6);
   z-index: -1;
   opacity: 0;
-  font-size: 0;
   transition: opacity 0.2s, z-index 0s 0.2s;
   text-align: center;
   overflow: hidden;
@@ -20,7 +21,7 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.vanilla-modal .modal > * {
+.vanilla-modal .modal>* {
   display: inline-block;
   white-space: normal;
   vertical-align: middle;
@@ -63,7 +64,7 @@
   transition: opacity 0.2s, transform 0.2s;
 }
 
-a[rel="modal:close"] {
+[data-modal-close] {
   position: absolute;
   z-index: 2;
   right: 0;
@@ -75,5 +76,5 @@ a[rel="modal:close"] {
   cursor: pointer;
   text-align: center;
   background: #fff;
-  box-shadow: -1px 1px 2px rgba(0,0,0,0.2);
+  box-shadow: -1px 1px 2px rgba(0, 0, 0, 0.2);
 }

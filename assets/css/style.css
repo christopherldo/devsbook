@@ -281,6 +281,20 @@ header .head-side {
     height: 25px;
 }
 
+.feed-new-photo {
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.feed-new-photo img {
+    width: 20px;
+    height: 20px;
+}
+
+.feed-new-file {
+    display: none;
+}
+
 .banners .box-body {
     margin: 0 10px 10px 10px;
 }
@@ -336,7 +350,10 @@ header .head-side {
 }
 
 .profile-info-item {
-    text-align: center;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .profile-info-item-n {
@@ -405,6 +422,7 @@ header .head-side {
 
 .user-photo-item {
     margin-right: 10px;
+    max-width: 25%;
 }
 
 .user-photo-item:last-child {
@@ -413,6 +431,15 @@ header .head-side {
 
 .user-photo-item img {
     max-width: 100%;
+}
+
+.full-user-photos .user-photo-item{
+    max-width: 100%;
+}
+
+.full-user-photos .user-photo-item img{
+    max-width: 192px;
+    max-height: 192px;
 }
 
 .tabs {
@@ -482,6 +509,7 @@ header .head-side {
     font-size: 15px;
     box-shadow: 0px 0px 3px #999;
     cursor: pointer;
+    text-decoration: none;
 }
 
 @media (max-width: 992px) {

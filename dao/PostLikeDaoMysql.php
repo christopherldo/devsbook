@@ -11,7 +11,7 @@ class PostLikeDaoMysql implements PostLikeDAO
     $this->pdo = $pdo;
   }
 
-  public function getLikeCount(int $idPost)
+  public function getLikeCount(string $idPost)
   {
     $sql = $this->pdo->prepare("SELECT COUNT(*) as c FROM post_likes WHERE id_post = :id_post");
     $sql->bindValue(':id_post', $idPost);
@@ -22,7 +22,7 @@ class PostLikeDaoMysql implements PostLikeDAO
     return $data['c'];
   }
 
-  public function isLiked(int $idPost, string $idUser)
+  public function isLiked(string $idPost, string $idUser)
   {
     $sql = $this->pdo->prepare(
       "SELECT * FROM post_likes WHERE id_post = :id_post AND id_user = :id_user"
@@ -38,7 +38,7 @@ class PostLikeDaoMysql implements PostLikeDAO
     return false;
   }
 
-  public function likeToggle(int $idPost, string $idUser)
+  public function likeToggle(string $idPost, string $idUser)
   {
     if ($this->isLiked($idPost, $idUser)) {
       $sql = $this->pdo->prepare(

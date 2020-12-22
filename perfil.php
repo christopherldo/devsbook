@@ -2,6 +2,7 @@
 require_once('./config.php');
 require_once('./models/Auth.php');
 require_once('./dao/PostDaoMysql.php');
+require_once('./dao/UserRelationDaoMysql.php');
 
 $auth = new Auth($pdo, $base);
 $userInfo = $auth->checkToken();
@@ -19,6 +20,7 @@ if ($publicId !== $userInfo->publicId) {
 
 $postDao = new PostDaoMysql($pdo);
 $userDao = new UserDaoMysql($pdo);
+$userRelationDao = new UserRelationDaoMysql($pdo);
 
 $user = $userDao->findById($publicId, true);
 
@@ -33,6 +35,8 @@ $dateTo = new DateTime('today');
 $user->ageYears = $datefrom->diff($dateTo)->y;
 
 $feed = $postDao->getUserFeed($publicId);
+
+$isFollowing = $userRelationDao->isFollowing($userInfo->publicId, $publicId);
 
 require_once('./partials/header.php');
 require_once('./partials/menu.php');
@@ -55,6 +59,13 @@ require_once('./partials/menu.php');
             <?php endif; ?>
           </div>
           <div class="profile-info-data row">
+            <?php if ($publicId !== $userInfo->publicId) : ?>
+              <div class="profile-info-item m-width-20">
+                <a href="<?= $base ?>/follow_action.php?id=<?= $publicId ?>" class="button">
+                  <?= $isFollowing ? 'Seguindo' : 'Seguir' ?>
+                </a>
+              </div>
+            <?php endif ?>
             <div class="profile-info-item m-width-20">
               <div class="profile-info-item-n"><?= count($user->followers) ?></div>
               <div class="profile-info-item-s">Seguidores</div>
@@ -149,14 +160,16 @@ require_once('./partials/menu.php');
           <div class="box-body row m-20">
 
             <?php foreach ($user->photos as $key => $item) : ?>
-              <div class="user-photo-item">
-                <a href="#modal-<?= $key ?>" rel="modal:open">
-                  <img src="<?= $base ?>/media/uploads/<?= $item->body ?>" />
-                </a>
-                <div id="modal-<?= $key ?>" style="display:none">
-                  <img src="<?= $base ?>/media/uploads/<?= $item->body ?>" />
+              <?php if($key < 4): ?>
+                <div class="user-photo-item">
+                  <a href="#modal-<?= $key ?>" data-modal-open>
+                    <img src="<?= $base ?>/media/uploads/<?= $item->body ?>" />
+                  </a>
+                  <div id="modal-<?= $key ?>" style="display:none">
+                    <img src="<?= $base ?>/media/uploads/<?= $item->body ?>" />
+                  </div>
                 </div>
-              </div>
+              <?php endif ?>
             <?php endforeach ?>
 
           </div>
@@ -176,5 +189,11 @@ require_once('./partials/menu.php');
     </div>
   </div>
 </section>
+
+<script>
+  window.onload = function() {
+    var modal = new VanillaModal.default();
+  };
+</script>
 
 <?php require_once('./partials/footer.php'); ?>
