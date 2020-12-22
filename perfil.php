@@ -10,6 +10,11 @@ $activeMenu = 'profile';
 
 $publicId = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_SPECIAL_CHARS);
 
+if ($publicId === $userInfo->publicId) {
+  header("Location: $base/perfil.php");
+  exit;
+}
+
 if ($publicId === null) {
   $publicId = $userInfo->publicId;
 }
@@ -34,7 +39,10 @@ $dateTo = new DateTime('today');
 
 $user->ageYears = $datefrom->diff($dateTo)->y;
 
-$feed = $postDao->getUserFeed($publicId);
+$info = $postDao->getUserFeed($publicId);
+$feed = $info['feed'];
+$pages = $info['pages'];
+$currentPage = $info['currentPage'];
 
 $isFollowing = $userRelationDao->isFollowing($userInfo->publicId, $publicId);
 
@@ -160,7 +168,7 @@ require_once('./partials/menu.php');
           <div class="box-body row m-20">
 
             <?php foreach ($user->photos as $key => $item) : ?>
-              <?php if($key < 4): ?>
+              <?php if ($key < 4) : ?>
                 <div class="user-photo-item">
                   <a href="#modal-<?= $key ?>" data-modal-open>
                     <img src="<?= $base ?>/media/uploads/<?= $item->body ?>" />
@@ -184,6 +192,32 @@ require_once('./partials/menu.php');
         <?php foreach ($feed as $item) : ?>
           <?php require('./partials/feed-item.php') ?>
         <?php endforeach ?>
+      <?php endif ?>
+
+      <?php if ($pages > 1) : ?>
+        <div class="feed-pagination">
+          <?php for ($q = 1; $q <= $pages; $q++) : ?>
+            <?php
+            $pageString = '';
+            if ($publicId === $userInfo->publicId) {
+              $pageString = "$base/perfil.php";
+
+              if ($q > 1) {
+                $pageString .= "?p=$q";
+              }
+            } else {
+              $pageString = "$base/perfil.php?id=$publicId";
+
+              if ($q > 1) {
+                $pageString .= "&p=$q";
+              }
+            }
+            ?>
+            <a class="<?= $q == $currentPage ? 'active' : '' ?>" href="<?= $pageString ?>">
+              <?= $q ?>
+            </a>
+          <?php endfor ?>
+        </div>
       <?php endif ?>
 
     </div>

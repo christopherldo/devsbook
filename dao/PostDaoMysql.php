@@ -32,9 +32,42 @@ class PostDaoMysql implements PostDAO
     $sql->execute();
   }
 
+  public function delete(string $postId, string $userId)
+  {
+    $postLikeDao = new PostLikeDaoMysql($this->pdo);
+    $postCommentDao = new PostCommentDaoMysql($this->pdo);
+
+    $post = $this->findById($postId);
+
+    if ($post) {
+      $sql = $this->pdo->prepare(
+        "DELETE FROM posts WHERE public_id = :public_id AND id_user = :id_user"
+      );
+      $sql->bindValue(':public_id', $postId);
+      $sql->bindValue(':id_user', $userId);
+      $sql->execute();
+
+      $postLikeDao->deleteFromPost($postId);
+      $postCommentDao->deleteFromPost($postId);
+
+      if ($post[0]->type === 'photo') {
+        unlink('./media/uploads/' . $post[0]->body);
+      }
+    }
+  }
+
   public function getHomeFeed(string $publicId)
   {
     $array = [];
+    $perPage = 10;
+
+    $page = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT);
+
+    if ($page === null || $page < 1) {
+      $page = 1;
+    }
+
+    $offset = ($page - 1) * $perPage;
 
     $userRelationDao = new UserRelationDaoMysql($this->pdo);
     $userList = $userRelationDao->getFollowing($publicId);
@@ -54,25 +87,57 @@ class PostDaoMysql implements PostDAO
       $counter++;
     }
 
-    $sqlString .= ") ORDER BY created_at DESC";
+    $sqlString .= ") ORDER BY created_at DESC LIMIT $offset,$perPage";
 
     $sql = $this->pdo->query($sqlString);
 
     if ($sql && $sql->rowCount() > 0) {
       $data = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-      $array = $this->postListToObject($data, $publicId);
+      $array['feed'] = $this->postListToObject($data, $publicId);
     }
+
+    $sqlString = "SELECT COUNT(*) as c FROM posts WHERE id_user IN (";
+    $counter = 1;
+    $userListLenght = count($userList);
+
+    foreach ($userList as $user) {
+      if ($counter < $userListLenght) {
+        $sqlString .= "'$user', ";
+      } else {
+        $sqlString .= "'$user'";
+      }
+      $counter++;
+    }
+
+    $sqlString .= ')';
+
+    $sql = $this->pdo->query($sqlString);
+    $totalData = $sql->fetch();
+    $total = $totalData['c'];
+
+    $array['pages'] = ceil($total / $perPage);
+    $array['currentPage'] = $page;
 
     return $array;
   }
 
   public function getUserFeed(string $publicId)
   {
-    $array = [];
+    $array = ['feed' => []];
+    $perPage = 10;
+
+    $page = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT);
+
+    if ($page === null || $page < 1) {
+      $page = 1;
+    }
+
+    $offset = ($page - 1) * $perPage;
 
     $sql = $this->pdo->prepare(
-      "SELECT * FROM posts WHERE id_user = :id_user ORDER BY created_at DESC"
+      "SELECT * FROM posts WHERE id_user = :id_user ORDER BY created_at DESC
+      LIMIT $offset,$perPage"
     );
     $sql->bindValue(':id_user', $publicId);
     $sql->execute();
@@ -80,8 +145,18 @@ class PostDaoMysql implements PostDAO
     if ($sql && $sql->rowCount() > 0) {
       $data = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-      $array = $this->postListToObject($data, $publicId);
+      $array['feed'] = $this->postListToObject($data, $publicId);
     }
+
+    $sql = $this->pdo->prepare("SELECT COUNT(*) as c FROM posts WHERE id_user = :id_user");
+    $sql->bindValue(':id_user', $publicId);
+    $sql->execute();
+
+    $totalData = $sql->fetch();
+    $total = $totalData['c'];
+
+    $array['pages'] = ceil($total / $perPage);
+    $array['currentPage'] = $page;
 
     return $array;
   }

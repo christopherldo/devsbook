@@ -295,6 +295,25 @@ header .head-side {
     display: none;
 }
 
+.feed-pagination a {
+    display: inline-block;
+    padding: 7px 10px;
+    border: 1px solid #ccc;
+    margin: 5px;
+    text-decoration: none;
+    color: #000;
+    border-radius: 3px;
+    transition: all 0.2s ease-in-out 0s;
+}
+
+.feed-pagination a:hover {
+    background-color: #ddd;
+}
+
+.feed-pagination a.active {
+    background-color: #fff;
+}
+
 .banners .box-body {
     margin: 0 10px 10px 10px;
 }
@@ -433,11 +452,11 @@ header .head-side {
     max-width: 100%;
 }
 
-.full-user-photos .user-photo-item{
+.full-user-photos .user-photo-item {
     max-width: 100%;
 }
 
-.full-user-photos .user-photo-item img{
+.full-user-photos .user-photo-item img {
     max-width: 192px;
     max-height: 192px;
 }

@@ -12,6 +12,7 @@ class Post
 interface PostDAO
 {
   public function insert(Post $post);
+  public function delete(string $postId, string $userId);
   public function getHomeFeed(string $publicId);
   public function getUserFeed(string $publicId);
   public function getPhotosFrom(string $publicId);

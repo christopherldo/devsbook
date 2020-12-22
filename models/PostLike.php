@@ -13,4 +13,5 @@ interface PostLikeDAO
   public function getLikeCount(string $idPost);
   public function isLiked(string $idPost, string $idUser);
   public function likeToggle(string $idPost, string $idUser);
+  public function deleteFromPost(string $idPost);
 }

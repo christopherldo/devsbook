@@ -54,4 +54,11 @@ class PostCommentDaoMysql implements PostCommentDAO
 
     return $array;
   }
+
+  public function deleteFromPost(string $idPost)
+  {
+    $sql = $this->pdo->prepare("DELETE FROM post_comments WHERE id_post = :id_post");
+    $sql->bindValue(':id_post', $idPost);
+    $sql->execute();
+  }
 }
