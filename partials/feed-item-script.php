@@ -1,12 +1,12 @@
 <script>
-  window.onload = function() {
+  window.addEventListener('load', () => {
     function closeFeedWindow() {
       document.querySelectorAll('.feed-item-more-window').forEach(item => {
         item.style.display = 'none';
       });
 
       document.removeEventListener('click', closeFeedWindow);
-    }
+    };
 
     document.querySelectorAll('.feed-item-head-btn').forEach(item => {
       item.addEventListener('click', () => {
@@ -78,9 +78,8 @@
 
             messageButton.innerHTML = count;
           }
-
         }
       });
     });
-  };
+  });
 </script>

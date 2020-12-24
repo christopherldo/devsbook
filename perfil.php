@@ -9,6 +9,7 @@ $userInfo = $auth->checkToken();
 $activeMenu = 'profile';
 
 $publicId = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_SPECIAL_CHARS);
+$page = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT);
 
 if ($publicId === $userInfo->publicId) {
   header("Location: $base/perfil.php");
@@ -21,6 +22,10 @@ if ($publicId === null) {
 
 if ($publicId !== $userInfo->publicId) {
   $activeMenu = '';
+}
+
+if ($page === null || $page < 1) {
+  $page = 1;
 }
 
 $postDao = new PostDaoMysql($pdo);
@@ -39,7 +44,7 @@ $dateTo = new DateTime('today');
 
 $user->ageYears = $datefrom->diff($dateTo)->y;
 
-$info = $postDao->getUserFeed($publicId);
+$info = $postDao->getUserFeed($publicId, $userInfo->publicId, $page);
 $feed = $info['feed'];
 $pages = $info['pages'];
 $currentPage = $info['currentPage'];

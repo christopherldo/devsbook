@@ -39,7 +39,7 @@ class PostDaoMysql implements PostDAO
 
     $post = $this->findById($postId);
 
-    if ($post) {
+    if ($post && $post[0]->user->publicId === $userId) {
       $sql = $this->pdo->prepare(
         "DELETE FROM posts WHERE public_id = :public_id AND id_user = :id_user"
       );
@@ -56,16 +56,10 @@ class PostDaoMysql implements PostDAO
     }
   }
 
-  public function getHomeFeed(string $publicId)
+  public function getHomeFeed(string $publicId, int $page = 1)
   {
     $array = [];
     $perPage = 10;
-
-    $page = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT);
-
-    if ($page === null || $page < 1) {
-      $page = 1;
-    }
 
     $offset = ($page - 1) * $perPage;
 
@@ -94,7 +88,7 @@ class PostDaoMysql implements PostDAO
     if ($sql && $sql->rowCount() > 0) {
       $data = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-      $array['feed'] = $this->postListToObject($data, $publicId);
+      $array['feed'] = $this->postListToObject($data, $publicId, $publicId);
     }
 
     $sqlString = "SELECT COUNT(*) as c FROM posts WHERE id_user IN (";
@@ -122,16 +116,10 @@ class PostDaoMysql implements PostDAO
     return $array;
   }
 
-  public function getUserFeed(string $publicId)
+  public function getUserFeed(string $publicId, string $loggedUser, int $page = 1)
   {
     $array = ['feed' => []];
     $perPage = 10;
-
-    $page = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT);
-
-    if ($page === null || $page < 1) {
-      $page = 1;
-    }
 
     $offset = ($page - 1) * $perPage;
 
@@ -145,7 +133,7 @@ class PostDaoMysql implements PostDAO
     if ($sql && $sql->rowCount() > 0) {
       $data = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-      $array['feed'] = $this->postListToObject($data, $publicId);
+      $array['feed'] = $this->postListToObject($data, $publicId, $loggedUser);
     }
 
     $sql = $this->pdo->prepare("SELECT COUNT(*) as c FROM posts WHERE id_user = :id_user");
@@ -175,13 +163,13 @@ class PostDaoMysql implements PostDAO
     if ($sql->rowCount() > 0) {
       $data = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-      $array = $this->postListToObject($data, $publicId);
+      $array = $this->postListToObject($data, $publicId, $publicId);
     }
 
     return $array;
   }
 
-  private function postListToObject(array $postList, string $publicId)
+  private function postListToObject(array $postList, string $publicId, string $loggedUser)
   {
     $posts = [];
     $userDao = new UserDaoMysql($this->pdo);
@@ -196,14 +184,14 @@ class PostDaoMysql implements PostDAO
       $newPost->body = $postItem['body'];
       $newPost->mine = false;
 
-      if ($postItem['id_user'] === $publicId) {
+      if ($postItem['id_user'] === $loggedUser) {
         $newPost->mine = true;
       }
 
       $newPost->user = $userDao->findById($postItem['id_user']);
 
       $newPost->likeCount = $postLikeDao->getLikeCount($newPost->publicId);
-      $newPost->liked = $postLikeDao->isLiked($newPost->publicId, $publicId);
+      $newPost->liked = $postLikeDao->isLiked($newPost->publicId, $loggedUser);
 
       $newPost->comments = $postCommentDaoMysql->getComments($newPost->publicId);
 
@@ -223,7 +211,7 @@ class PostDaoMysql implements PostDAO
       if ($sql->rowCount() > 0) {
         $data = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-        $array = $this->postListToObject($data, $publicId);
+        $array = $this->postListToObject($data, $publicId, $publicId);
 
         return $array;
       }

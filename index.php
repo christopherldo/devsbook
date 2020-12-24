@@ -5,10 +5,19 @@ require_once('./dao/PostDaoMysql.php');
 
 $auth = new Auth($pdo, $base);
 $userInfo = $auth->checkToken();
+
+$page = filter_input(INPUT_GET, 'p', FILTER_VALIDATE_INT);
+
+if ($page === null || $page < 1) {
+  $page = 1;
+}
+
 $activeMenu = 'home';
 
 $postDao = new PostDaoMysql($pdo);
-$info = $postDao->getHomeFeed($userInfo->publicId);
+
+$info = $postDao->getHomeFeed($userInfo->publicId, $page);
+
 $feed = $info['feed'];
 $pages = $info['pages'];
 $currentPage = $info['currentPage'];
@@ -39,18 +48,12 @@ require_once('./partials/menu.php');
     <div class="column side pl-5">
       <div class="box banners">
         <div class="box-header">
-          <div class="box-header-text">Patrocínios</div>
+          <div class="box-header-text">Dica:</div>
           <div class="box-header-buttons">
           </div>
         </div>
         <div class="box-body">
-          <a href=""><img src="https://alunos.b7web.com.br/media/courses/php-nivel-1.jpg" /></a>
-          <a href=""><img src="https://alunos.b7web.com.br/media/courses/laravel-nivel-1.jpg" /></a>
-        </div>
-      </div>
-      <div class="box">
-        <div class="box-body m-10">
-          Criado com ❤️ por christopherldo
+          <a href="<?= $base ?>/configuracoes.php" style="color: #000; text-decoration: none;">Você pode trocar sua foto de capa e perfil clicando aqui</a>
         </div>
       </div>
     </div>
