@@ -26,12 +26,21 @@
   let feedPhoto = document.querySelector('.feed-new-photo');
   let feedFile = document.querySelector('.feed-new-file');
 
-  feedSubmit.addEventListener('click', () => {
+  feedSubmit.addEventListener('click', async () => {
     let value = feedInput.innerText.trim();
 
     feedForm.querySelector('input').value = value;
+    
     if (value) {
-      feedForm.submit();
+      let req = await fetch('<?= $base ?>/ajax_post.php?txt=' + value);
+
+      let json = await req.json();
+
+      if(json.error !== ''){
+        alert(json.error);
+      };
+
+      window.location.href = window.location.href;
     }
   });
 

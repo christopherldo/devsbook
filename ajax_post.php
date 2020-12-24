@@ -6,9 +6,11 @@ require_once('./dao/PostDaoMysql.php');
 $auth = new Auth($pdo, $base);
 $userInfo = $auth->checkToken();
 
-$body = filter_input(INPUT_POST, 'body', FILTER_SANITIZE_SPECIAL_CHARS);
+$txt = filter_input(INPUT_GET, 'txt', FILTER_SANITIZE_SPECIAL_CHARS);
 
-if ($body) {
+$array = [];
+
+if ($txt) {
   $postDao = new PostDaoMysql($pdo);
 
   $newPost = new Post();
@@ -16,10 +18,15 @@ if ($body) {
   $newPost->idUser = $userInfo->publicId;
   $newPost->type = 'text';
   $newPost->createdAt = gmdate('Y-m-d H:i:s');
-  $newPost->body = $body;
+  $newPost->body = $txt;
 
   $postDao->insert($newPost);
+
+  $array = [
+    'error' => '',
+  ];
 }
 
-header("Location: $base");
+header("Content-Type: application/json");
+echo json_encode($array);
 exit;
