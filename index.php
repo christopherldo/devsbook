@@ -18,7 +18,7 @@ $postDao = new PostDaoMysql($pdo);
 
 $info = $postDao->getHomeFeed($userInfo->publicId, $page);
 
-$feed = $info['feed'];
+$feed = $info['feed'] ?? null;
 $pages = $info['pages'];
 $currentPage = $info['currentPage'];
 
@@ -31,10 +31,11 @@ require_once('./partials/menu.php');
     <div class="column pr-5">
 
       <?php require_once('./partials/feed-editor.php') ?>
-
-      <?php foreach ($feed as $item) : ?>
-        <?php require('./partials/feed-item.php') ?>
-      <?php endforeach ?>
+      <?php if ($feed) : ?>
+        <?php foreach ($feed as $item) : ?>
+          <?php require('./partials/feed-item.php') ?>
+        <?php endforeach ?>
+      <?php endif ?>
 
       <?php if ($pages > 1) : ?>
         <div class="feed-pagination">
