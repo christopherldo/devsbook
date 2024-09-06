@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+  webserver:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./services/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - ./app:/app
+
+  php:
+    image: "my-php"
+    build: services/php
+    environment:
+      BASE_URL: $BASE_URL
+      TOKEN_SECRET: $TOKEN_SECRET
+      DATABASE_USER: $DATABASE_USER
+      DATABASE_PASSWORD: $DATABASE_PASSWORD
+      PHP_UPLOAD_MAX_FILESIZE: 20M
+      PHP_POST_MAX_SIZE: 25M
+    volumes:
+      - ./app:/app
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: $DATABASE_USER
+      POSTGRES_PASSWORD: $DATABASE_PASSWORD
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  adminer:
+    image: adminer:latest
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+
+volumes:
+  postgresdata: {}
