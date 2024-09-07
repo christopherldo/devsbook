@@ -33,7 +33,7 @@ CREATE TABLE users (
   city varchar(50) DEFAULT NULL,
   work varchar(50) DEFAULT NULL,
   avatar varchar(100) NOT NULL DEFAULT 'default.jpg',
-  cover varchar(100) NOT NULL DEFAULT 'cover.jpg'
+  cover varchar(100) NOT NULL DEFAULT 'default.jpg'
 );
 
 CREATE TABLE user_relations (
