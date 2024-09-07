@@ -1,17 +1,12 @@
 version: "3"
 
 services:
-  webserver:
-    image: nginx:latest
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - $PORT:80
-    volumes:
-      - ./services/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
-      - ./app:/app
-
-  php:
-    image: "my-php"
-    build: .
+      - "$PORT:80"
     environment:
       BASE_URL: $BASE_URL
       PORT: $PORT
@@ -25,6 +20,8 @@ services:
       PHP_POST_MAX_SIZE: 25M
     volumes:
       - ./app:/app
+      - ./services/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./services/nginx/default.conf:/etc/nginx/conf.d/default.conf
 
   db:
     image: postgres:latest
@@ -38,7 +35,7 @@ services:
   adminer:
     image: adminer:latest
     ports:
-      - 8081:8080
+      - $ADMINER_PORT:8080
     depends_on:
       - db
 
