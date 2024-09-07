@@ -4,17 +4,21 @@ services:
   webserver:
     image: nginx:latest
     ports:
-      - "80:80"
+      - $PORT:80
     volumes:
       - ./services/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
       - ./app:/app
 
   php:
     image: "my-php"
-    build: services/php
+    build: .
     environment:
       BASE_URL: $BASE_URL
+      PORT: $PORT
       TOKEN_SECRET: $TOKEN_SECRET
+      DATABASE_NAME: $DATABASE_NAME
+      DATABASE_HOST: $DATABASE_HOST
+      DATABASE_PORT: $DATABASE_PORT
       DATABASE_USER: $DATABASE_USER
       DATABASE_PASSWORD: $DATABASE_PASSWORD
       PHP_UPLOAD_MAX_FILESIZE: 20M
@@ -34,7 +38,7 @@ services:
   adminer:
     image: adminer:latest
     ports:
-      - 8080:8080
+      - 8081:8080
     depends_on:
       - db
 
