@@ -2,7 +2,7 @@
 
 session_start();
 
-$base = getenv("BASE_URL") . ":" . getenv("PORT");
+$base = getenv("BASE_URL");
 
 $db_name = getenv("DATABASE_NAME");
 $db_host = getenv("DATABASE_HOST");

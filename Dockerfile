@@ -30,8 +30,8 @@ COPY app /app
 # Configure o NGINX para rodar com o PHP-FPM
 RUN mkdir -p /run/nginx
 
-# Exponha a porta 80
-EXPOSE 80
+# Exponha a porta 8080
+EXPOSE 8080
 
 # Comando para iniciar NGINX e PHP-FPM
 CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
